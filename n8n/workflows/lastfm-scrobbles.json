@@ -1,0 +1,46 @@
+{
+  "name": "Last.fm Scrobbles to CJK Lyrics Lab",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "scrobble",
+        "method": "POST",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://backend:8080/api/tracks",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{ $json }}"
+      },
+      "name": "Create Track",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create Track",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "id": "1",
+  "tags": []
+}
