@@ -26,11 +26,11 @@ jobs:
     
     - name: Build
       working-directory: ./frontend
-      run: npm run build
+      run: npx nx build cjk-lyrics-lab --prod
     
     - name: Test
       working-directory: ./frontend
-      run: npm test
+      run: npx nx test cjk-lyrics-lab
 
   backend:
     runs-on: ubuntu-latest
