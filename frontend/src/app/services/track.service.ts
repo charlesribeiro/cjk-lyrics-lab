@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Track, TrackAnalysis, AnkiExport } from '../models/track.model';
 import { MOCK_TRACKS } from '../data/mock-tracks';
 
@@ -7,38 +9,40 @@ import { MOCK_TRACKS } from '../data/mock-tracks';
   providedIn: 'root'
 })
 export class TrackService {
-  private apiUrl = '/api/tracks';
+  private apiUrl = 'http://localhost:8080/api/tracks';
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
   getTracks(): Observable<Track[]> {
-    // For now, return mock data
-    return of(MOCK_TRACKS);
+    return this.http.get<any[]>(this.apiUrl).pipe(
+      map(tracks => tracks.map(track => this.convertFromBackend(track)))
+    );
   }
 
   getTrack(id: string): Observable<Track | undefined> {
-    return of(MOCK_TRACKS.find(track => track.id === id));
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map(track => track ? this.convertFromBackend(track) : undefined)
+    );
   }
 
   createTrack(track: Omit<Track, 'id' | 'createdAt'>): Observable<Track> {
-    const newTrack: Track = {
-      ...track,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date()
-    };
-    return of(newTrack);
+    const backendTrack = this.convertToBackend(track);
+    return this.http.post<any>(this.apiUrl, backendTrack).pipe(
+      map(track => this.convertFromBackend(track))
+    );
   }
 
   updateTrack(id: string, track: Partial<Track>): Observable<Track | undefined> {
-    const existingTrack = MOCK_TRACKS.find(t => t.id === id);
-    if (existingTrack) {
-      return of({ ...existingTrack, ...track });
-    }
-    return of(undefined);
+    const backendTrack = this.convertToBackend(track);
+    return this.http.put<any>(`${this.apiUrl}/${id}`, backendTrack).pipe(
+      map(track => track ? this.convertFromBackend(track) : undefined)
+    );
   }
 
   deleteTrack(id: string): Observable<boolean> {
-    return of(true);
+    return this.http.delete(`${this.apiUrl}/${id}`).pipe(
+      map(() => true)
+    );
   }
 
   getTrackAnalysis(id: string): Observable<TrackAnalysis | undefined> {
@@ -47,12 +51,16 @@ export class TrackService {
   }
 
   exportToAnki(id: string): Observable<AnkiExport> {
-    const track = MOCK_TRACKS.find(t => t.id === id);
-    const ankiExport: AnkiExport = {
-      trackId: id,
-      cards: []
-    };
-    return of(ankiExport);
+    return this.http.get<string>(`${this.apiUrl}/${id}/anki-export`).pipe(
+      map(csv => {
+        // Parse CSV and convert to AnkiExport format
+        const ankiExport: AnkiExport = {
+          trackId: id,
+          cards: []
+        };
+        return ankiExport;
+      })
+    );
   }
 
   downloadAnkiCsv(ankiExport: AnkiExport): void {
@@ -64,6 +72,22 @@ export class TrackService {
     a.download = `anki-export-${ankiExport.trackId}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+  }
+
+  private convertFromBackend(backendTrack: any): Track {
+    return {
+      ...backendTrack,
+      language: backendTrack.language?.toLowerCase() as 'ja' | 'ko' | 'zh',
+      createdAt: new Date(backendTrack.createdAt),
+      lastStudied: backendTrack.lastStudied ? new Date(backendTrack.lastStudied) : undefined
+    };
+  }
+
+  private convertToBackend(frontendTrack: any): any {
+    return {
+      ...frontendTrack,
+      language: frontendTrack.language?.toUpperCase()
+    };
   }
 
   private convertToAnkiCsv(ankiExport: AnkiExport): string {
