@@ -1,20 +1,7 @@
 module.exports = {
-  preset: 'ts-jest',
+  preset: 'jest-preset-angular',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setup-jest.ts'],
-  transform: {
-    '^.+\\.(ts|mjs|js)$': [
-      'ts-jest',
-      {
-        tsconfig: 'tsconfig.spec.json',
-        useESM: true,
-      },
-    ],
-  },
-  transformIgnorePatterns: [
-    'node_modules/(?!(@angular|rxjs|zone\\.js)/)',
-  ],
-  extensionsToTreatAsEsm: ['.ts'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.spec.ts',
