@@ -6,11 +6,10 @@ import { Track } from '../../models/track.model';
 import { TrackService } from '../../services/track.service';
 
 @Component({
-  selector: 'app-new-track',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './new-track.component.html',
-  styleUrl: './new-track.component.css'
+    selector: 'app-new-track',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './new-track.component.html',
+    styleUrl: './new-track.component.css'
 })
 export class NewTrackComponent {
   track = {

@@ -5,11 +5,10 @@ import { Track } from '../../models/track.model';
 import { TrackService } from '../../services/track.service';
 
 @Component({
-  selector: 'app-track-list',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './track-list.component.html',
-  styleUrl: './track-list.component.css'
+    selector: 'app-track-list',
+    imports: [CommonModule],
+    templateUrl: './track-list.component.html',
+    styleUrl: './track-list.component.css'
 })
 export class TrackListComponent implements OnInit {
   tracks: Track[] = [];

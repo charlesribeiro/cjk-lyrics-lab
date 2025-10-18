@@ -5,11 +5,10 @@ import { Track, TrackAnalysis } from '../../models/track.model';
 import { TrackService } from '../../services/track.service';
 
 @Component({
-  selector: 'app-track-detail',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './track-detail.component.html',
-  styleUrl: './track-detail.component.css'
+    selector: 'app-track-detail',
+    imports: [CommonModule],
+    templateUrl: './track-detail.component.html',
+    styleUrl: './track-detail.component.css'
 })
 export class TrackDetailComponent implements OnInit {
   track?: Track;
