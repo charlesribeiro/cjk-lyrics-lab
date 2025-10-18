@@ -30,7 +30,7 @@ jobs:
     
     - name: Test
       working-directory: ./frontend
-      run: npm test -- --watch=false
+      run: npm test
 
   backend:
     runs-on: ubuntu-latest
