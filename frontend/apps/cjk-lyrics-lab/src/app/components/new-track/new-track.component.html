@@ -1,0 +1,71 @@
+<div class="container mx-auto p-6 max-w-4xl">
+  <h1 class="text-3xl font-bold mb-6">Confirm New Track</h1>
+  
+  <form (ngSubmit)="onSubmit()" class="space-y-6">
+    <div>
+      <label class="block text-sm font-medium mb-2">Title</label>
+      <input 
+        type="text" 
+        [(ngModel)]="track.title" 
+        name="title"
+        required
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-2">Artist</label>
+      <input 
+        type="text" 
+        [(ngModel)]="track.artist" 
+        name="artist"
+        required
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-2">Album (Optional)</label>
+      <input 
+        type="text" 
+        [(ngModel)]="track.album" 
+        name="album"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-2">Language</label>
+      <select 
+        [(ngModel)]="track.language" 
+        name="language"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <option value="ja">Japanese (日本語)</option>
+        <option value="ko">Korean (한국어)</option>
+        <option value="zh">Chinese (中文)</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-2">Original Lyrics</label>
+      <textarea 
+        [(ngModel)]="track.originalLyrics" 
+        name="originalLyrics"
+        rows="10"
+        required
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="Enter the lyrics here..."></textarea>
+    </div>
+
+    <div class="flex justify-end space-x-4">
+      <button 
+        type="button" 
+        (click)="onCancel()"
+        class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+        Cancel
+      </button>
+      <button 
+        type="submit"
+        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        Confirm & Analyze
+      </button>
+    </div>
+  </form>
+</div>
