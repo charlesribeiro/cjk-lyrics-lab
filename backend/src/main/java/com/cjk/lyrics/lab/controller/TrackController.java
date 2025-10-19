@@ -66,4 +66,11 @@ public class TrackController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+    
+    @PostMapping("/{id}/translate")
+    public ResponseEntity<TrackDto> translateTrack(@PathVariable String id) {
+        return trackService.translateTrack(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

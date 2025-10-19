@@ -1,10 +1,10 @@
 package com.cjk.lyrics.lab.service;
 
-import com.cjk.lyrics.lab.dto.AnkiExportDto;
 import com.cjk.lyrics.lab.dto.TrackDto;
 import com.cjk.lyrics.lab.model.Track;
 import com.cjk.lyrics.lab.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TrackService {
     
     private final TrackRepository trackRepository;
+    private final TranslationService translationService;
     
     public List<TrackDto> getAllTracks() {
         return trackRepository.findAll().stream()
@@ -32,6 +34,17 @@ public class TrackService {
     public TrackDto createTrack(TrackDto trackDto) {
         Track track = convertToEntity(trackDto);
         track.setCreatedAt(LocalDateTime.now());
+        
+        // Auto-translate lyrics if not provided
+        if (track.getTranslatedLyrics() == null || track.getTranslatedLyrics().trim().isEmpty()) {
+            log.info("Auto-translating lyrics for track: {}", track.getTitle());
+            String translation = translationService.translateLyrics(
+                track.getOriginalLyrics(), 
+                track.getLanguage()
+            );
+            track.setTranslatedLyrics(translation);
+        }
+        
         Track savedTrack = trackRepository.save(track);
         return convertToDto(savedTrack);
     }
@@ -58,6 +71,20 @@ public class TrackService {
             return true;
         }
         return false;
+    }
+    
+    public Optional<TrackDto> translateTrack(String id) {
+        return trackRepository.findById(id)
+                .map(track -> {
+                    log.info("Translating lyrics for existing track: {}", track.getTitle());
+                    String translation = translationService.translateLyrics(
+                        track.getOriginalLyrics(), 
+                        track.getLanguage()
+                    );
+                    track.setTranslatedLyrics(translation);
+                    Track updatedTrack = trackRepository.save(track);
+                    return convertToDto(updatedTrack);
+                });
     }
     
     private TrackDto convertToDto(Track track) {
