@@ -51,27 +51,36 @@ public class TranslationService {
     private String translateWithOpenAI(String lyrics, Track.Language language) {
         String languageName = getLanguageName(language);
         String prompt = buildTranslationPrompt(lyrics, languageName);
-        
+
         OpenAIRequest request = new OpenAIRequest();
         OpenAIRequest.Message systemMessage = new OpenAIRequest.Message();
         systemMessage.setRole("system");
         systemMessage.setContent("You are a professional translator specializing in CJK (Chinese, Japanese, Korean) languages. Provide accurate, natural translations that preserve the emotional and cultural context of song lyrics.");
-        
+
         OpenAIRequest.Message userMessage = new OpenAIRequest.Message();
         userMessage.setRole("user");
         userMessage.setContent(prompt);
-        
+
         request.setMessages(List.of(systemMessage, userMessage));
-        
-        String response = webClient.post()
-                .uri(openaiApiUrl + "/chat/completions")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + openaiApiKey)
-                .body(Mono.just(request), OpenAIRequest.class)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-        
-        return parseOpenAIResponse(response);
+
+        try {
+            String response = webClient.post()
+                    .uri(openaiApiUrl + "/chat/completions")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + openaiApiKey)
+                    .body(Mono.just(request), OpenAIRequest.class)
+                    .retrieve()
+                    .onStatus(status -> status.isError(), clientResponse -> {
+                        log.error("OpenAI API returned error status: {}", clientResponse.statusCode());
+                        return Mono.error(new RuntimeException("OpenAI API error: " + clientResponse.statusCode()));
+                    })
+                    .bodyToMono(String.class)
+                    .block();
+
+            return parseOpenAIResponse(response);
+        } catch (Exception e) {
+            log.error("Error calling OpenAI API", e);
+            throw new RuntimeException("Failed to call OpenAI API: " + e.getMessage(), e);
+        }
     }
     
     private String parseOpenAIResponse(String responseJson) {
@@ -124,7 +133,7 @@ public class TranslationService {
         return String.format("""
             [Translation temporarily unavailable]
             
-            OpenAI API is currently not responding. Please try again later.
+            OpenAI API quota exceeded. Please add credits to your OpenAI account at https://platform.openai.com/account/billing
             
             Language: %s
             Original lyrics: %s
