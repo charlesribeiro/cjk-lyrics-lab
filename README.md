@@ -11,13 +11,15 @@ An AI-assisted lyrics learning application for studying Chinese (中文), Japane
 - 🤖 **AI Translation**: OpenAI-powered lyrics translation
 - 📊 **Analysis Tabs**: Vocabulary, grammar, and difficulty analysis
 - 📝 **Anki Export**: Export vocabulary and phrases as CSV for Anki import
-- 🎨 **Modern UI**: Clean, responsive interface built with Angular 18 + Tailwind CSS
+- 🎨 **Modern UI**: Clean, responsive interface built with Angular 20 + NX + Tailwind CSS
 - 🐳 **Docker Support**: Easy deployment with Docker Compose
 
 ## Tech Stack
 
 ### Frontend
-- **Angular 18**: Modern web framework with standalone components
+- **Angular 20**: Modern web framework with standalone components
+- **NX Monorepo**: Scalable monorepo architecture for enterprise development
+- **Jest**: Modern JavaScript testing framework
 - **Tailwind CSS**: Utility-first CSS framework
 - **TypeScript**: Type-safe development
 
@@ -34,7 +36,8 @@ An AI-assisted lyrics learning application for studying Chinese (中文), Japane
 
 ## Prerequisites
 
-- **Node.js**: v20 or higher
+- **Node.js**: v20.19.5 (LTS) or higher
+- **NX CLI**: `npm install -g nx` (for frontend development)
 - **Java**: 17 or higher
 - **Maven**: 3.9 or higher
 - **Docker & Docker Compose**: For containerized deployment
@@ -71,11 +74,42 @@ An AI-assisted lyrics learning application for studying Chinese (中文), Japane
 
 ```bash
 cd frontend
-npm install
-npm start
+npm install --legacy-peer-deps
+nx serve cjk-lyrics-lab
 ```
 
 The frontend will be available at http://localhost:4200
+
+**Available NX Commands:**
+```bash
+# Development server
+nx serve cjk-lyrics-lab
+
+# Run tests
+nx test cjk-lyrics-lab
+
+# Build for production
+nx build cjk-lyrics-lab
+
+# Lint code
+nx lint cjk-lyrics-lab
+
+# Run E2E tests
+nx e2e cjk-lyrics-lab-e2e
+```
+
+**Troubleshooting Frontend Issues:**
+```bash
+# If npm install fails with peer dependency conflicts:
+npm install --legacy-peer-deps
+
+# If NX commands fail with "not part of workspace":
+cd frontend
+nx test cjk-lyrics-lab
+
+# If tests fail, clear cache:
+nx reset
+```
 
 #### Backend Development
 
@@ -99,21 +133,45 @@ docker run -it --rm \
 
 Access n8n at http://localhost:5678
 
+## Important Notes
+
+### NX Monorepo Migration
+This project has been migrated from a standard Angular project to an NX monorepo for better scalability and enterprise development practices. Key changes:
+
+- **Frontend is now an NX workspace** with the main app named `cjk-lyrics-lab`
+- **All frontend commands now use NX**: `nx serve`, `nx test`, `nx build`, etc.
+- **Jest is used for testing** instead of Karma (more modern and faster)
+- **Angular 20** with latest dependencies and improved performance
+- **Legacy peer dependencies** may be required for some installations
+
+### Installation Notes
+- Always use `npm install --legacy-peer-deps` when installing frontend dependencies
+- Ensure you're in the `frontend/` directory when running NX commands
+- The original frontend code is backed up in `frontend-backup/` directory
+
 ## Project Structure
 
 ```
 cjk-lyrics-lab/
-├── frontend/                 # Angular 18 frontend
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/  # UI components
-│   │   │   │   ├── new-track/       # Track creation form
-│   │   │   │   ├── track-detail/    # Track view with analysis tabs
-│   │   │   │   └── track-list/      # Track listing
-│   │   │   ├── models/      # TypeScript interfaces
-│   │   │   ├── services/    # API services
-│   │   │   └── data/        # Mock data
-│   │   └── styles.css       # Global styles with Tailwind
+├── frontend/                 # NX Monorepo with Angular 20
+│   ├── apps/
+│   │   ├── cjk-lyrics-lab/  # Main Angular application
+│   │   │   ├── src/
+│   │   │   │   ├── app/
+│   │   │   │   │   ├── components/  # UI components
+│   │   │   │   │   │   ├── new-track/       # Track creation form
+│   │   │   │   │   │   ├── track-detail/    # Track view with analysis tabs
+│   │   │   │   │   │   └── track-list/      # Track listing
+│   │   │   │   │   ├── models/      # TypeScript interfaces
+│   │   │   │   │   ├── services/    # API services
+│   │   │   │   │   └── data/        # Mock data
+│   │   │   │   └── styles.css       # Global styles with Tailwind
+│   │   │   ├── project.json         # NX project configuration
+│   │   │   ├── jest.config.ts       # Jest test configuration
+│   │   │   └── tsconfig.*.json      # TypeScript configurations
+│   │   └── cjk-lyrics-lab-e2e/      # E2E testing project
+│   ├── nx.json               # NX workspace configuration
+│   ├── package.json          # Dependencies and scripts
 │   ├── Dockerfile
 │   └── nginx.conf
 │
@@ -188,7 +246,7 @@ See [n8n/README.md](n8n/README.md) for detailed setup instructions.
 ### Build Frontend
 ```bash
 cd frontend
-npm run build
+nx build cjk-lyrics-lab
 ```
 
 ### Build Backend
@@ -207,7 +265,7 @@ docker-compose build
 ### Frontend Tests
 ```bash
 cd frontend
-npm test
+nx test cjk-lyrics-lab
 ```
 
 ### Backend Tests
@@ -234,14 +292,26 @@ For issues, questions, or contributions, please open an issue on GitHub.
 
 ## Roadmap
 
+### Completed ✅
+- [x] Migrate to NX monorepo architecture
+- [x] Upgrade to Angular 20 with latest dependencies
+- [x] Migrate from Karma to Jest for testing
+- [x] Set up modern CI/CD pipeline with GitHub Actions
+- [x] Docker containerization with proper build processes
+
+### In Progress 🚧
 - [ ] Implement actual OpenAI translation API integration
 - [ ] Add lyrics fetching from various lyrics APIs
 - [ ] Implement vocabulary analysis with JLPT/TOPIK/HSK tagging
+
+### Planned 📋
 - [ ] Add grammar pattern detection
 - [ ] Create study mode with spaced repetition
 - [ ] Add user authentication and personalization
 - [ ] Support for more languages
 - [ ] Mobile app (React Native or Flutter)
+- [ ] Performance optimizations with NX caching
+- [ ] Add more NX libraries for shared components
 
 ---
 
