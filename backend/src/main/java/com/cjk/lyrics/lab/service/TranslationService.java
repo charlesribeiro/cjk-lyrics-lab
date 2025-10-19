@@ -4,7 +4,6 @@ import com.cjk.lyrics.lab.dto.OpenAIRequest;
 import com.cjk.lyrics.lab.dto.OpenAIResponse;
 import com.cjk.lyrics.lab.model.Track;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -27,27 +26,16 @@ public class TranslationService {
     
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
-    private final String actualApiKey;
 
     public TranslationService() {
         this.webClient = WebClient.builder()
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
         this.objectMapper = new ObjectMapper();
-        
-        // Load .env file
-        Dotenv dotenv = Dotenv.configure().load();
-        this.actualApiKey = dotenv.get("OPENAI_API_KEY");
-        
-        if (actualApiKey != null && !actualApiKey.isEmpty()) {
-            log.info("OpenAI API key loaded from .env file");
-        } else {
-            log.warn("OpenAI API key not found in .env file");
-        }
     }
     
     public String translateLyrics(String lyrics, Track.Language language) {
-        if (actualApiKey == null || actualApiKey.isEmpty()) {
+        if (openaiApiKey == null || openaiApiKey.isEmpty()) {
             log.warn("OpenAI API key not configured, returning mock translation");
             return generateMockTranslation(lyrics, language);
         }
@@ -78,7 +66,7 @@ public class TranslationService {
         try {
             String response = webClient.post()
                     .uri(openaiApiUrl + "/chat/completions")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + actualApiKey)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + openaiApiKey)
                     .body(Mono.just(request), OpenAIRequest.class)
                     .retrieve()
                     .onStatus(status -> status.isError(), clientResponse -> {
