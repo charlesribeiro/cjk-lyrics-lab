@@ -52,12 +52,25 @@
 
   <div *ngIf="activeTab === 'lyrics'" class="space-y-6">
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-bold mb-4">Original Lyrics</h2>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Original Lyrics</h2>
+        <button 
+          (click)="translateTrack()"
+          [disabled]="isTranslating"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+          {{ isTranslating ? 'Translating...' : 'Translate with AI' }}
+        </button>
+      </div>
       <pre class="whitespace-pre-wrap font-sans">{{ track.originalLyrics }}</pre>
     </div>
     <div class="bg-white rounded-lg shadow p-6" *ngIf="track.translatedLyrics">
       <h2 class="text-xl font-bold mb-4">Translation</h2>
       <pre class="whitespace-pre-wrap font-sans">{{ track.translatedLyrics }}</pre>
+    </div>
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4" *ngIf="!track.translatedLyrics">
+      <p class="text-yellow-800">
+        <strong>No translation available.</strong> Click "Translate with AI" to generate an automatic translation using OpenAI.
+      </p>
     </div>
   </div>
 

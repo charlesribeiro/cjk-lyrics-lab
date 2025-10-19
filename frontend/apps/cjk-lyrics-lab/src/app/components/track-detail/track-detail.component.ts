@@ -6,6 +6,7 @@ import { TrackService } from '../../services/track.service';
 
 @Component({
     selector: 'app-track-detail',
+    standalone: true,
     imports: [CommonModule],
     templateUrl: './track-detail.component.html',
     styleUrl: './track-detail.component.css'
@@ -14,6 +15,7 @@ export class TrackDetailComponent implements OnInit {
   track?: Track;
   analysis?: TrackAnalysis;
   activeTab: 'lyrics' | 'vocabulary' | 'grammar' | 'export' = 'lyrics';
+  isTranslating = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,6 +45,23 @@ export class TrackDetailComponent implements OnInit {
         this.trackService.downloadAnkiCsv(ankiExport);
       });
     }
+  }
+
+  translateTrack(): void {
+    if (!this.track || this.isTranslating) return;
+    
+    this.isTranslating = true;
+    this.trackService.translateTrack(this.track.id).subscribe({
+      next: (updatedTrack) => {
+        this.track = updatedTrack;
+        this.isTranslating = false;
+      },
+      error: (error) => {
+        console.error('Translation failed:', error);
+        this.isTranslating = false;
+        // You could add a toast notification here
+      }
+    });
   }
 
   goBack(): void {

@@ -45,6 +45,12 @@ export class TrackService {
     );
   }
 
+  translateTrack(id: string): Observable<Track> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/translate`, {}).pipe(
+      map(track => this.convertFromBackend(track))
+    );
+  }
+
   getTrackAnalysis(id: string): Observable<TrackAnalysis | undefined> {
     // Mock analysis data
     return of(undefined);
