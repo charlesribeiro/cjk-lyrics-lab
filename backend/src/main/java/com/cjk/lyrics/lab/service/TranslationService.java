@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 
 @Service
@@ -32,6 +33,16 @@ public class TranslationService {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
         this.objectMapper = new ObjectMapper();
+    }
+    
+    @PostConstruct
+    public void init() {
+        // Load API key from environment variable if not set via properties
+        if (openaiApiKey == null || openaiApiKey.isEmpty()) {
+            openaiApiKey = System.getenv("OPENAI_API_KEY");
+            log.info("Loaded OpenAI API key from environment variable: {}", 
+                openaiApiKey != null ? openaiApiKey.substring(0, Math.min(20, openaiApiKey.length())) + "..." : "null");
+        }
     }
     
     public String translateLyrics(String lyrics, Track.Language language) {
