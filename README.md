@@ -8,11 +8,12 @@ An AI-assisted lyrics learning application for studying Chinese (中文), Japane
 
 - 🎵 **Track Management**: Add and manage lyrics for CJK (Chinese, Japanese, Korean) songs
 - 🔄 **Last.fm Integration**: Automatic scrobble tracking via n8n workflows
-- 🤖 **AI Translation**: OpenAI-powered lyrics translation
+- 🤖 **AI Translation**: OpenAI-powered lyrics translation with manual translation trigger
 - 📊 **Analysis Tabs**: Vocabulary, grammar, and difficulty analysis
 - 📝 **Anki Export**: Export vocabulary and phrases as CSV for Anki import
 - 🎨 **Modern UI**: Clean, responsive interface built with Angular 20 + NX + Tailwind CSS
 - 🐳 **Docker Support**: Easy deployment with Docker Compose
+- 🔧 **Enhanced n8n Workflows**: Automatic lyrics fetching and translation pipeline
 
 ## Tech Stack
 
@@ -300,7 +301,7 @@ For issues, questions, or contributions, please open an issue on GitHub.
 - [x] Docker containerization with proper build processes
 
 ### In Progress 🚧
-- [ ] Implement actual OpenAI translation API integration
+- [x] Implement actual OpenAI translation API integration ✅
 - [ ] Add lyrics fetching from various lyrics APIs
 - [ ] Implement vocabulary analysis with JLPT/TOPIK/HSK tagging
 

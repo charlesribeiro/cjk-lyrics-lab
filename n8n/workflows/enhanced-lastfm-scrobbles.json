@@ -1,0 +1,282 @@
+{
+  "name": "Enhanced Last.fm Scrobbles with Lyrics & Translation",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "scrobble",
+        "method": "POST",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "webhook-1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.language }}",
+              "rightValue": "ja",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition-2", 
+              "leftValue": "={{ $json.language }}",
+              "rightValue": "ko",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition-3",
+              "leftValue": "={{ $json.language }}",
+              "rightValue": "zh",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        }
+      },
+      "name": "Check CJK Language",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "id": "if-1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.genius.com/search",
+        "method": "GET",
+        "options": {
+          "qs": {
+            "q": "={{ $json.title }} {{ $json.artist }}"
+          },
+          "headers": {
+            "Authorization": "Bearer {{ $env.GENIUS_API_TOKEN }}"
+          }
+        }
+      },
+      "name": "Fetch Lyrics from Genius",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 200],
+      "id": "genius-1"
+    },
+    {
+      "parameters": {
+        "url": "=http://backend:8080/api/tracks",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{ {\n  \"title\": $json.title,\n  \"artist\": $json.artist,\n  \"album\": $json.album || \"\",\n  \"language\": $json.language,\n  \"originalLyrics\": $json.originalLyrics || \"[Lyrics not found]\",\n  \"translatedLyrics\": \"\",\n  \"difficulty\": $json.difficulty || \"\",\n  \"tags\": $json.tags || []\n} }}"
+      },
+      "name": "Create Track with Lyrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 300],
+      "id": "create-track-1"
+    },
+    {
+      "parameters": {
+        "url": "=http://backend:8080/api/tracks/{{ $json.id }}/translate",
+        "method": "POST",
+        "options": {}
+      },
+      "name": "Trigger Translation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 300],
+      "id": "translate-1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.musixmatch.com/ws/1.1/matcher.lyrics.get",
+        "method": "GET",
+        "options": {
+          "qs": {
+            "q_track": "={{ $json.title }}",
+            "q_artist": "={{ $json.artist }}",
+            "apikey": "{{ $env.MUSIXMATCH_API_KEY }}"
+          }
+        }
+      },
+      "name": "Fetch Lyrics from Musixmatch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 400],
+      "id": "musixmatch-1"
+    },
+    {
+      "parameters": {
+        "url": "=http://backend:8080/api/tracks",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{ {\n  \"title\": $json.title,\n  \"artist\": $json.artist,\n  \"album\": $json.album || \"\",\n  \"language\": $json.language,\n  \"originalLyrics\": \"[Lyrics not available]\",\n  \"translatedLyrics\": \"\",\n  \"difficulty\": $json.difficulty || \"\",\n  \"tags\": $json.tags || []\n} }}"
+      },
+      "name": "Create Track without Lyrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 500],
+      "id": "create-track-2"
+    },
+    {
+      "parameters": {
+        "url": "=http://backend:8080/api/tracks/{{ $json.id }}/translate",
+        "method": "POST",
+        "options": {}
+      },
+      "name": "Trigger Translation (No Lyrics)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 500],
+      "id": "translate-2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"Track processed successfully\",\n  \"trackId\": $json.id,\n  \"hasLyrics\": $json.originalLyrics !== \"[Lyrics not available]\"\n} }}"
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 400],
+      "id": "success-response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": false,\n  \"message\": \"Track not processed - not a CJK language (Japanese, Korean, Chinese)\",\n  \"language\": $json.language\n} }}"
+      },
+      "name": "Skip Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [650, 500],
+      "id": "skip-response"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check CJK Language",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check CJK Language": {
+      "main": [
+        [
+          {
+            "node": "Fetch Lyrics from Genius",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Lyrics from Musixmatch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Lyrics from Genius": {
+      "main": [
+        [
+          {
+            "node": "Create Track with Lyrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Lyrics from Musixmatch": {
+      "main": [
+        [
+          {
+            "node": "Create Track without Lyrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Track with Lyrics": {
+      "main": [
+        [
+          {
+            "node": "Trigger Translation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Track without Lyrics": {
+      "main": [
+        [
+          {
+            "node": "Trigger Translation (No Lyrics)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Translation": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Translation (No Lyrics)": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "enhanced-lastfm-scrobbles",
+  "tags": ["cjk", "lyrics", "translation", "lastfm"]
+}
